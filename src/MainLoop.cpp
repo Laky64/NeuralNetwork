@@ -6,7 +6,7 @@
 MainLoop::MainLoop()
 {
     // initialize
-    //this->initVariables();
+    // this->initVariables();
     this->initWindow();
 
     for (int i = 0; i < 10; i++)
@@ -16,7 +16,7 @@ MainLoop::MainLoop()
 
     numberTexture = new sf::RenderTexture();
 
-    numberTexture->create(28 * 7, 28*7);
+    numberTexture->create(28 * 7, 28 * 7);
 
     numberTexture->clear(sf::Color::Black);
 
@@ -26,6 +26,7 @@ MainLoop::MainLoop()
 MainLoop::~MainLoop()
 {
     delete this->window;
+    delete this->numberTexture;
 }
 
 // Accessors
@@ -37,24 +38,23 @@ const bool MainLoop::running() const
 //------Functions------//
 //---Voids---//
 
-void MainLoop::drawNumber(std::vector<float>& data, sf::Vector2f offset)
+void MainLoop::drawNumber(std::vector<float> &data, sf::Vector2f offset)
 {
 
     int size = sqrt(data.size());
     for (int y = 0; y < size; y++)
     {
         for (int x = 0; x < size; x++)
-        {    
+        {
             if (data[y * size + x] != lastNumberTexture[y * size + x])
             {
-                sf::RectangleShape rect(sf::Vector2f(1,1));
+                sf::RectangleShape rect(sf::Vector2f(1, 1));
                 rect.setSize(sf::Vector2f(7, 7));
-                rect.setPosition((x)*7, (size - y)*7);
-            
-                rect.setFillColor(sf::Color(data[y * size + x]*255, data[y * size + x] * 255, data[y * size + x] * 255));
+                rect.setPosition((x)*7, (size - y) * 7);
+
+                rect.setFillColor(sf::Color(data[y * size + x] * 255, data[y * size + x] * 255, data[y * size + x] * 255));
                 numberTexture->draw(rect);
             }
-
         }
     }
     sprite.setTexture(numberTexture->getTexture());
@@ -63,7 +63,7 @@ void MainLoop::drawNumber(std::vector<float>& data, sf::Vector2f offset)
     lastNumberTexture = data;
 }
 
-std::vector<float> MainLoop::offsetNumber(int x, int y, std::vector<float>& data)
+std::vector<float> MainLoop::offsetNumber(int x, int y, std::vector<float> &data)
 {
     for (int _x = 0; _x < abs(x); _x++)
     {
@@ -74,9 +74,8 @@ std::vector<float> MainLoop::offsetNumber(int x, int y, std::vector<float>& data
                 data.erase(data.begin());
                 data.push_back(0);
             }
-            
         }
-        else 
+        else
         {
             for (int i = 0; i < 28; i++)
             {
@@ -84,7 +83,6 @@ std::vector<float> MainLoop::offsetNumber(int x, int y, std::vector<float>& data
                 data.pop_back();
             }
         }
-       
     }
 
     for (int _y = 0; _y < abs(y); _y++)
@@ -93,11 +91,10 @@ std::vector<float> MainLoop::offsetNumber(int x, int y, std::vector<float>& data
         {
             for (int i = 0; i < 28; i++)
             {
-               
+
                 data.erase(data.begin() + i * 28);
                 data.insert(data.begin() + i * 28 + 27, 0);
             }
-
         }
         else
         {
@@ -112,7 +109,7 @@ std::vector<float> MainLoop::offsetNumber(int x, int y, std::vector<float>& data
     return data;
 }
 
-std::vector<float> MainLoop::scaleNumber(float scaleFactor, std::vector<float>& data)
+std::vector<float> MainLoop::scaleNumber(float scaleFactor, std::vector<float> &data)
 {
     int newScale = scaleFactor * 28;
     std::vector<float> newImg;
@@ -129,7 +126,7 @@ std::vector<float> MainLoop::scaleNumber(float scaleFactor, std::vector<float>& 
     {
         newImg.push_back(0);
     }
-    
+
     for (int j = 0; j < 28 - newScale; j++)
     {
         for (int i = 0; i < 28; i++)
@@ -143,15 +140,14 @@ std::vector<float> MainLoop::scaleNumber(float scaleFactor, std::vector<float>& 
     return newImg;
 }
 
-std::vector<float> MainLoop::scaleImg(int newSize, std::vector<float>& data)
+std::vector<float> MainLoop::scaleImg(int newSize, std::vector<float> &data)
 {
     int oldScale = sqrt(data.size());
     int newScale = newSize;
-   
+
     int pixelSize = oldScale / newScale;
     std::vector<float> newImg;
-    
-    
+
     for (int y = 0; y < newScale; y++)
     {
         for (int x = 0; x < newScale; x++)
@@ -164,9 +160,7 @@ std::vector<float> MainLoop::scaleImg(int newSize, std::vector<float>& data)
                 for (int i = 0; i < pixelSize; i++)
                 {
                     sum += data[x * pixelSize + i + y * oldScale * pixelSize + j * oldScale];
-
                 }
-
             }
 
             newImg.push_back(sum / (pixelSize * pixelSize));
@@ -193,51 +187,48 @@ void MainLoop::pollEvents()
                 leftMouseButton = true;
             break;
         case sf::Event::MouseButtonReleased:
-            if (this->event.key.code == sf::Mouse::Left) {
-
-
+            if (this->event.key.code == sf::Mouse::Left)
+            {
 
                 leftMouseButton = false;
-
-
-                
             }
-            else if (this->event.key.code == sf::Mouse::Right) {
+            else if (this->event.key.code == sf::Mouse::Right)
+            {
 
-                //std::cout << "AverageError: " << network.calculateAverageErrorMultipleSolutions(dataMultipleSolutions) << "\n";
+                // std::cout << "AverageError: " << network.calculateAverageErrorMultipleSolutions(dataMultipleSolutions) << "\n";
                 downScaledImg = network.calculateOutputs(testDataMultipleSolutions[currentTestNumber].first);
 
                 currentTestNumber++;
-
             }
             break;
         case sf::Event::KeyPressed:
-            if (this->event.key.code == sf::Keyboard::Up) {
+            if (this->event.key.code == sf::Keyboard::Up)
+            {
 
                 network.addLearningRate(0.01f);
                 std::cout << network.LearningRate << std::endl;
-
             }
-            else if (this->event.key.code == sf::Keyboard::Down) {
+            else if (this->event.key.code == sf::Keyboard::Down)
+            {
 
                 network.addLearningRate(-0.01f);
                 std::cout << network.LearningRate << std::endl;
-
             }
-            else if (this->event.key.code == sf::Keyboard::Space) {
+            else if (this->event.key.code == sf::Keyboard::Space)
+            {
 
                 network.renderWeights = true;
                 if (learn)
                     learn = false;
                 else
                     learn = true;
-
             }
-            else if (this->event.key.code == sf::Keyboard::S) {
+            else if (this->event.key.code == sf::Keyboard::S)
+            {
                 network.saveNetwork();
-
             }
-            else if (this->event.key.code == sf::Keyboard::C) {
+            else if (this->event.key.code == sf::Keyboard::C)
+            {
 
                 drawField.clear();
                 std::vector<float> img(28 * 28);
@@ -245,39 +236,35 @@ void MainLoop::pollEvents()
                 network.calculateOutputs(downScaledImg);
                 network.renderWeights = true;
             }
-            else if (this->event.key.code == sf::Keyboard::L) {
+            else if (this->event.key.code == sf::Keyboard::L)
+            {
                 network.loadNetwork();
-
             }
-            else if (this->event.key.code == sf::Keyboard::R) {
+            else if (this->event.key.code == sf::Keyboard::R)
+            {
                 std::vector<float> input;
 
-                
                 for (int i = 0; i < 4; i++)
                 {
                     float value = ((float)rand() / RAND_MAX) * 20;
-                  
+
                     input.push_back(value);
                 }
 
                 downScaledImg = network.feedForward(3, input);
-                
-
             }
 
             break;
         case sf::Event::MouseWheelMoved:
             drawField.changeBrushSize(event.mouseWheel.delta);
-
-            
         }
-
-
     }
     mousePos = sf::Mouse::getPosition(*window);
-    if (leftMouseButton && !learn) {
-        
-        if (drawField.draw(mousePos)) {
+    if (leftMouseButton && !learn)
+    {
+
+        if (drawField.draw(mousePos))
+        {
             std::vector<float> img = drawField.getImage();
             downScaledImg = scaleImg(28, img);
             solutions = network.calculateOutputs(downScaledImg);
@@ -286,25 +273,20 @@ void MainLoop::pollEvents()
             for (int i = 0; i < solutions.size(); i++)
             {
 
-                if (solutions[i] > highestValue) {
+                if (solutions[i] > highestValue)
+                {
                     highestValue = solutions[i];
                     solution = i;
                 }
             }
         }
-
     }
-    
-
 
     // calc FPS
     currentTime = clock.getElapsedTime();
     fps = 1.0f / (currentTime.asSeconds() - previousTime.asSeconds());
     previousTime = currentTime;
-
 }
-
-
 
 //--initialize--//
 void MainLoop::initVariables()
@@ -312,16 +294,14 @@ void MainLoop::initVariables()
 
     this->window = nullptr;
 
-    previousTime = clock.getElapsedTime();  
-
+    previousTime = clock.getElapsedTime();
 
     srand(time(NULL));
 
-    
-    //Load the MNIST Data
+    // Load the MNIST Data
 
     /*
-    
+
     //Path for CSV File of MNIST Digits (Train)
     fileData2.open("../Data/MNIST/trainingImages/mnist_train_modified.csv");
 
@@ -387,16 +367,12 @@ void MainLoop::initVariables()
 
         }
 
-        
+
         data.first = inputs;
         this->testData.push_back(data);
 
     }
 */
-
-
-
-
 }
 
 void MainLoop::initWindow()
@@ -404,13 +380,8 @@ void MainLoop::initWindow()
     sf::ContextSettings settings;
     settings.antialiasingLevel = 8;
 
-
     this->window = new sf::RenderWindow(sf::VideoMode(1600, 900), "Main", sf::Style::Close, settings);
-
-
 }
-
-
 
 //--Update--//
 
@@ -418,24 +389,26 @@ void MainLoop::initWindow()
 void MainLoop::update()
 {
     // Events
-    
+
     this->pollEvents();
 
-    //drawNumber(data[0].first);
+    // drawNumber(data[0].first);
 
-    
-    //network.train2(this->data);
-    //network.train(data);
-    //can only be trained if data is Loaded
-    if (learn) {
+    // network.train2(this->data);
+    // network.train(data);
+    // can only be trained if data is Loaded
+    if (learn)
+    {
         std::vector<std::pair<std::vector<float>, int>> data;
-        if (!loopData) {
+        if (!loopData)
+        {
             for (int i = 0; i < datasetSize; i++)
             {
                 data.push_back(allData[i]);
             }
         }
-        else {
+        else
+        {
             for (int i = 0; i < datasetSize; i++)
             {
                 data.push_back(allData[i + loopDataIndex]);
@@ -449,22 +422,17 @@ void MainLoop::update()
         network.train(data);
     }
 
-    
-        
-    
-        
-
-    //window->display();
+    // window->display();
 }
-
-
 
 void MainLoop::renderText()
 {
     sf::Text text;
     sf::Font font;
+    // if (!font.loadFromFile("font.ttf"))
     if (!font.loadFromFile("../assets/font.ttf"))
-        std::cout << "Coud not load font!" << "\n";
+        std::cout << "Coud not load font!"
+                  << "\n";
 
     text.setFont(font);
     text.setCharacterSize(24);
@@ -486,31 +454,23 @@ void MainLoop::renderText()
     text.setPosition(sf::Vector2f(250, 560));
     text.setString(std::to_string(solution));
     window->draw(text);
-
-
 }
 
 //--render--// -> Called by main
 void MainLoop::render()
 {
 
-    //std::cout << fps << "\n";
-    if (!learn) {
+    // std::cout << fps << "\n";
+    if (!learn)
+    {
         window->clear(sf::Color::White);
 
         renderText();
 
-
-
-
-
         network.renderFrame = true;
-        network.render(this->window, sf::Vector2i(1100,850),sf::Vector2i(600,25));
+        network.render(this->window, sf::Vector2i(1100, 850), sf::Vector2i(600, 25));
         drawField.render(window, mousePos);
         drawNumber(downScaledImg, sf::Vector2f(560, 168));
         window->display();
-
     }
-
-
 }

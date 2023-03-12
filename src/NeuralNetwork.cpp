@@ -5,8 +5,7 @@
 #include "Layer.h"
 #include <math.h>
 
-
-NeuralNetwork::NeuralNetwork(const std::initializer_list<int>& LayerSizes, int batchSize)
+NeuralNetwork::NeuralNetwork(const std::initializer_list<int> &LayerSizes, int batchSize)
 {
 
 	NumberOfLayers = LayerSizes.size();
@@ -17,14 +16,11 @@ NeuralNetwork::NeuralNetwork(const std::initializer_list<int>& LayerSizes, int b
 		Layer currentLayer = Layer(i, previosLayerSize, 1);
 		Layers.push_back(currentLayer);
 		previosLayerSize = i;
-
 	}
-
 
 	this->batchSize = batchSize;
 
 	totalError = 0;
-
 
 	currentActivationFunction = "lr";
 
@@ -36,17 +32,17 @@ NeuralNetwork::NeuralNetwork(const std::initializer_list<int>& LayerSizes, int b
 
 	texture = new sf::RenderTexture();
 
-	texture->create(1100, 850+50);
+	texture->create(1100, 850 + 50);
 
 	texture->clear(sf::Color::White);
-
 }
 
 NeuralNetwork::~NeuralNetwork()
 {
+	delete texture;
 }
 
-std::vector<float> NeuralNetwork::offsetNumber(int x, int y, std::vector<float>& data)
+std::vector<float> NeuralNetwork::offsetNumber(int x, int y, std::vector<float> &data)
 {
 	for (int _x = 0; _x < abs(x); _x++)
 	{
@@ -57,7 +53,6 @@ std::vector<float> NeuralNetwork::offsetNumber(int x, int y, std::vector<float>&
 				data.erase(data.begin());
 				data.push_back(0);
 			}
-
 		}
 		else
 		{
@@ -67,7 +62,6 @@ std::vector<float> NeuralNetwork::offsetNumber(int x, int y, std::vector<float>&
 				data.pop_back();
 			}
 		}
-
 	}
 
 	for (int _y = 0; _y < abs(y); _y++)
@@ -80,7 +74,6 @@ std::vector<float> NeuralNetwork::offsetNumber(int x, int y, std::vector<float>&
 				data.erase(data.begin() + i * 28);
 				data.insert(data.begin() + i * 28 + 27, 0);
 			}
-
 		}
 		else
 		{
@@ -95,10 +88,9 @@ std::vector<float> NeuralNetwork::offsetNumber(int x, int y, std::vector<float>&
 	return data;
 }
 
-
 int NeuralNetwork::calculateSolution(std::vector<float> &inputs)
 {
-	
+
 	std::vector<float> Outputs = calculateOutputs(inputs);
 
 	int Solution = 0;
@@ -106,18 +98,18 @@ int NeuralNetwork::calculateSolution(std::vector<float> &inputs)
 	for (int i = 0; i < Outputs.size(); i++)
 	{
 
-		if (Outputs[i] > highestValue) {
+		if (Outputs[i] > highestValue)
+		{
 			highestValue = Outputs[i];
 			Solution = i;
 		}
 	}
 	return Solution;
-	
 }
 
 std::vector<float> NeuralNetwork::calculateOutputs(std::vector<float> &inputs, float randNoiseStrenght)
 {
-	//apply input values to first Layer
+	// apply input values to first Layer
 	for (int a = 0; a < Layers[0].NumberOfNeurons; a++)
 	{
 		float value = inputs[a] + ((rand() / RAND_MAX) - 0.5f) * randNoiseStrenght;
@@ -130,11 +122,9 @@ std::vector<float> NeuralNetwork::calculateOutputs(std::vector<float> &inputs, f
 
 	double softmaxSum = 0;
 
-	//calc 
+	// calc
 	for (int j = 1; j < NumberOfLayers; j++)
 	{
-
-
 
 		for (int a = 0; a < Layers[j].NumberOfNeurons; a++)
 		{
@@ -144,16 +134,16 @@ std::vector<float> NeuralNetwork::calculateOutputs(std::vector<float> &inputs, f
 			{
 
 				value += Layers[j].Neurons[a].weights[t] * Layers[j - 1].Neurons[t].value;
-				if (std::isnan(value)) {
+				if (std::isnan(value))
+				{
 					std::cout << "NAN2: " << Layers[j].Neurons[a].weights[t] << ", " << Layers[j - 1].Neurons[t].value << "\n";
 				}
-
 			}
 
-			//add bias
+			// add bias
 			value += Layers[j].Neurons[a].bias;
 
-			//decide between activation and softmax
+			// decide between activation and softmax
 			if (j == NumberOfLayers - 1)
 			{
 				if (currentOutputActivationFunction == "soft")
@@ -162,33 +152,29 @@ std::vector<float> NeuralNetwork::calculateOutputs(std::vector<float> &inputs, f
 					softmaxSum += exp(temp);
 					Layers[j].Neurons[a].value = value;
 				}
-				else {
+				else
+				{
 					Layers[j].Neurons[a].value = activationFunction(value, currentOutputActivationFunction);
 				}
-
 			}
-			else 
+			else
 			{
 				Layers[j].Neurons[a].value = activationFunction(value);
 			}
-			if (j == 3) {
-				//std::cout << activationFunction(value) << "\n";
+			if (j == 3)
+			{
+				// std::cout << activationFunction(value) << "\n";
 			}
-
-
 		}
-
-
 	}
 
-	if (std::isinf(softmaxSum)) {
+	if (std::isinf(softmaxSum))
+	{
 		std::cout << "Sum: " << softmaxSum << "\n";
-		//softmaxSum = DBL_MAX;
-
+		// softmaxSum = DBL_MAX;
 	}
 
-
-	//return Outputs
+	// return Outputs
 	std::vector<float> Outputs;
 
 	for (int l = 0; l < Layers[NumberOfLayers - 1].NumberOfNeurons; l++)
@@ -197,43 +183,44 @@ std::vector<float> NeuralNetwork::calculateOutputs(std::vector<float> &inputs, f
 		{
 			double temp = Layers[NumberOfLayers - 1].Neurons[l].value;
 			float softmaxValue = exp(temp);
-			if (std::isinf(softmaxValue)) {
+			if (std::isinf(softmaxValue))
+			{
 				Outputs.push_back(1);
 			}
-			else {
+			else
+			{
 				Outputs.push_back(softmaxValue / softmaxSum);
 			}
-			
 		}
-		else {
+		else
+		{
 			Outputs.push_back(Layers[NumberOfLayers - 1].Neurons[l].value);
 		}
 
-		//std::cout << softmaxValue / softmaxSum << "\n";
+		// std::cout << softmaxValue / softmaxSum << "\n";
 	}
 
 	return Outputs;
 }
 
-std::vector<float> NeuralNetwork::feedForward(int startLayer, std::vector<float>& inputs, float randNoiseStrenght)
+std::vector<float> NeuralNetwork::feedForward(int startLayer, std::vector<float> &inputs, float randNoiseStrenght)
 {
-	
-	//apply input values to first Layer
+
+	// apply input values to first Layer
 	for (int a = 0; a < Layers[startLayer].NumberOfNeurons; a++)
 	{
 		float value = inputs[a] + ((rand() / RAND_MAX) - 0.5f) * randNoiseStrenght;
-		//if (value > 1)
-			//value = 1;
-		//else if (value < 0)
-			//value = 0;
+		// if (value > 1)
+		// value = 1;
+		// else if (value < 0)
+		// value = 0;
 		Layers[startLayer].Neurons[a].setValue(value);
 		std::cout << value << "\n";
 	}
 
 	double softmaxSum = 0;
 
-
-	//calc 
+	// calc
 	for (int j = 1 + startLayer; j < NumberOfLayers; j++)
 	{
 
@@ -246,16 +233,16 @@ std::vector<float> NeuralNetwork::feedForward(int startLayer, std::vector<float>
 			{
 
 				value += Layers[j].Neurons[a].weights[t] * Layers[j - 1].Neurons[t].value;
-				if (std::isnan(value)) {
+				if (std::isnan(value))
+				{
 					std::cout << "NAN2: " << Layers[j].Neurons[a].weights[t] << ", " << Layers[j - 1].Neurons[t].value << "\n";
 				}
-
 			}
 
-			//add bias
+			// add bias
 			value += Layers[j].Neurons[a].bias;
 
-			//decide between activation and softmax
+			// decide between activation and softmax
 			if (j == NumberOfLayers - 1)
 			{
 				if (currentOutputActivationFunction == "soft")
@@ -264,33 +251,30 @@ std::vector<float> NeuralNetwork::feedForward(int startLayer, std::vector<float>
 					softmaxSum += exp(temp);
 					Layers[j].Neurons[a].value = value;
 				}
-				else {
+				else
+				{
 					Layers[j].Neurons[a].value = activationFunction(value, currentOutputActivationFunction);
 				}
-
 			}
 			else
 			{
 				Layers[j].Neurons[a].value = activationFunction(value);
 			}
 
-			if (j == 3) {
-				//std::cout << activationFunction(value) << "\n";
+			if (j == 3)
+			{
+				// std::cout << activationFunction(value) << "\n";
 			}
-
 		}
-
-
 	}
 
-	if (std::isinf(softmaxSum)) {
+	if (std::isinf(softmaxSum))
+	{
 		std::cout << "Sum: " << softmaxSum << "\n";
-		//softmaxSum = DBL_MAX;
-
+		// softmaxSum = DBL_MAX;
 	}
 
-
-	//return Outputs
+	// return Outputs
 	std::vector<float> Outputs;
 
 	for (int l = 0; l < Layers[NumberOfLayers - 1].NumberOfNeurons; l++)
@@ -299,26 +283,27 @@ std::vector<float> NeuralNetwork::feedForward(int startLayer, std::vector<float>
 		{
 			double temp = Layers[NumberOfLayers - 1].Neurons[l].value;
 			float softmaxValue = exp(temp);
-			if (std::isinf(softmaxValue)) {
+			if (std::isinf(softmaxValue))
+			{
 				Outputs.push_back(1);
 			}
-			else {
+			else
+			{
 				Outputs.push_back(softmaxValue / softmaxSum);
 			}
-
 		}
-		else {
+		else
+		{
 			Outputs.push_back(Layers[NumberOfLayers - 1].Neurons[l].value);
 		}
 
-		//std::cout << softmaxValue / softmaxSum << "\n";
+		// std::cout << softmaxValue / softmaxSum << "\n";
 	}
 
 	return Outputs;
 }
 
-
-int NeuralNetwork::train(std::vector<std::pair<std::vector<float>, int>>& data)
+int NeuralNetwork::train(std::vector<std::pair<std::vector<float>, int>> &data)
 {
 	std::pair<std::vector<float>, int> modified;
 	for (int i = 0; i < data.size() / batchSize; i++)
@@ -330,11 +315,9 @@ int NeuralNetwork::train(std::vector<std::pair<std::vector<float>, int>>& data)
 		{
 
 			Gradients.push_back(Backpropagation(data[i * batchSize + j]));
-			
 		}
 
 		std::vector<std::pair<std::vector<std::vector<float>>, std::vector<float>>> AverageGradient = averageWeightsGradient(Gradients);
-
 
 		applyWeightsAndBiasGradient(AverageGradient);
 	}
@@ -342,7 +325,7 @@ int NeuralNetwork::train(std::vector<std::pair<std::vector<float>, int>>& data)
 	return 0;
 }
 
-int NeuralNetwork::trainMultipleSolutions(std::vector<std::pair<std::vector<float>, std::vector<float>>>& data)
+int NeuralNetwork::trainMultipleSolutions(std::vector<std::pair<std::vector<float>, std::vector<float>>> &data)
 {
 	std::pair<std::vector<float>, int> modified;
 	for (int i = 0; i < data.size() / batchSize; i++)
@@ -354,12 +337,9 @@ int NeuralNetwork::trainMultipleSolutions(std::vector<std::pair<std::vector<floa
 		{
 
 			Gradients.push_back(BackpropagationMultipleSolutions(data[i * batchSize + j]));
-
 		}
 
-
 		std::vector<std::pair<std::vector<std::vector<float>>, std::vector<float>>> AverageGradient = averageWeightsGradient(Gradients);
-
 
 		applyWeightsAndBiasGradient(AverageGradient);
 	}
@@ -367,68 +347,85 @@ int NeuralNetwork::trainMultipleSolutions(std::vector<std::pair<std::vector<floa
 	return 0;
 }
 
-
-
-void NeuralNetwork::render(sf::RenderWindow* window, sf::Vector2i size, sf::Vector2i position)
+void NeuralNetwork::render(sf::RenderWindow *window, sf::Vector2i size, sf::Vector2i position)
 {
-	if (renderFrame && !renderWeights) {
+	if (renderFrame && !renderWeights)
+	{
 		renderFrame = false;
-		
+
 		for (int i = 0; i < NumberOfLayers; i++)
 		{
+
 			sf::CircleShape circle;
 			circle.setRadius(10);
+			float averageValueLayer = 0;
+			float LayerValueDist = 0;
+			float maxVal = 0;
+			float minVal = 99999999999999999;
 			for (int j = 0; j < Layers[i].NumberOfNeurons; j++)
 			{
-				
+				float neuronValue = Layers[i].Neurons[j].value;
 				float val = (activationFunction(abs(Layers[i].Neurons[Layers[i].NumberOfNeurons - j].value), "s") - 0.5f) * 4;
-				if (val != 0) {
 
-				
+				averageValueLayer += neuronValue;
+				if (neuronValue > maxVal)
+				{
+					maxVal = neuronValue;
+				}
+				else if (neuronValue < minVal)
+				{
+					minVal = neuronValue;
+				}
+				if (true)
+				{
 
-					circle.setPosition((float)size.x / (NumberOfLayers + 1) * (i + 1), (float)size.y / (Layers[i].NumberOfNeurons + 1) * (j));
+					circle.setPosition((float)size.x / (NumberOfLayers + 1) * (i + 1), (float)size.y / (Layers[i].NumberOfNeurons + 1) * (j + 1));
 
 					circle.setFillColor(sf::Color(253, 197, 92, 255));
 					texture->draw(circle);
 				}
 			}
+			LayerValueDist = abs(minVal - maxVal);
+			averageValueLayer /= Layers[i].NumberOfNeurons;
 
 			for (int j = 0; j < Layers[i].NumberOfNeurons; j++)
 			{
 
-				float val = (activationFunction(abs(Layers[i].Neurons[Layers[i].NumberOfNeurons - j].value), "s") - 0.5f) * 4;
-				if (val != 0) {
+				float neuronValue = Layers[i].Neurons[Layers[i].NumberOfNeurons - j - 1].value;
+				float val = ((neuronValue) / LayerValueDist);
+				if (neuronValue != 0)
+				{
 
-					circle.setPosition((float)size.x / (NumberOfLayers + 1) * (i + 1), (float)size.y / (Layers[i].NumberOfNeurons + 1) * (j));
-					val = 1;
-					circle.setFillColor(sf::Color(253 - 198 * val, 197 + 55 * val, 92 + 52 * val, 255 * val));
+					circle.setPosition((float)size.x / (NumberOfLayers + 1) * (i + 1), (float)size.y / (Layers[i].NumberOfNeurons + 1) * (j + 1));
+
+					circle.setFillColor(sf::Color(1 - abs(val) * 253, 197, 92, abs(val) * 255));
 					texture->draw(circle);
 				}
 			}
 		}
 
 		sprite.setTexture(texture->getTexture());
-		sprite.setPosition(sf::Vector2f(position.x,position.y-50));
+		sprite.setPosition(sf::Vector2f(position.x, position.y - 50));
 		window->draw(sprite);
-
 	}
-	if (renderWeights) {
+	if (renderWeights)
+	{
 		renderWeights = false;
 		texture->clear(sf::Color::White);
 		for (int i = 1; i < NumberOfLayers; i++)
 		{
-			for (int j = 0; j < Layers[i].NumberOfNeurons; j++) {
+			for (int j = 0; j < Layers[i].NumberOfNeurons; j++)
+			{
 				for (int l = 0; l < Layers[i - 1].NumberOfNeurons; l++)
 				{
 					sf::Vertex line[] =
-					{
+						{
 
-						sf::Vertex(sf::Vector2f((float)size.x / (NumberOfLayers + 1) * (i + 1) + 10, (float)size.y / (Layers[i].NumberOfNeurons + 1) * (j + 1) + 5)),
-						sf::Vertex(sf::Vector2f((float)size.x / (NumberOfLayers + 1) * (i)+10, (float)size.y / (Layers[i - 1].NumberOfNeurons + 1) * (1 + l) + 5))
-					};
+							sf::Vertex(sf::Vector2f((float)size.x / (NumberOfLayers + 1) * (i + 1) + 10, (float)size.y / (Layers[i].NumberOfNeurons + 1) * (j + 1) + 5)),
+							sf::Vertex(sf::Vector2f((float)size.x / (NumberOfLayers + 1) * (i) + 10, (float)size.y / (Layers[i - 1].NumberOfNeurons + 1) * (1 + l) + 5))};
 					int num = (Layers[i].Neurons[j].weights[l]) / abs(Layers[i].Neurons[j].weights[l]) * 0.5 + 0.5;
-					line[0].color = sf::Color(255 * abs(num - 1), 0, 255 * (num), 100 * (activationFunction(abs(Layers[i].Neurons[j].weights[l]),"s") - 0.5f));
-					line[1].color = sf::Color(255 * abs(num - 1), 0, 255 * (num), 100 * (activationFunction(abs(Layers[i].Neurons[j].weights[l]),"s") - 0.5f));
+					line[0].color = sf::Color(255 * abs(num - 1), 0, 255 * (num), 100 * (activationFunction(abs(Layers[i].Neurons[j].weights[l]), "s") - 0.5f));
+					line[1].color = sf::Color(255 * abs(num - 1), 0, 255 * (num), 100 * (activationFunction(abs(Layers[i].Neurons[j].weights[l]), "s") - 0.5f));
 					if (isnan(Layers[i].Neurons[j].weights[l]))
 					{
 						line[0].color = sf::Color(0, 250, 0, 255);
@@ -436,7 +433,6 @@ void NeuralNetwork::render(sf::RenderWindow* window, sf::Vector2i size, sf::Vect
 					}
 					texture->draw(line, 2, sf::Lines);
 				}
-
 			}
 		}
 
@@ -449,23 +445,18 @@ void NeuralNetwork::render(sf::RenderWindow* window, sf::Vector2i size, sf::Vect
 				circle.setRadius(10);
 				circle.setFillColor(sf::Color(253, 197, 92, 255));
 				circle.setPosition((float)size.x / (NumberOfLayers + 1) * (i + 1), (float)size.y / (Layers[i].NumberOfNeurons + 1) * (j + 1));
-				circle.setOutlineThickness(2);
-				circle.setOutlineColor(sf::Color(253, 197, 92, 255));
+				circle.setOutlineThickness(3);
+				circle.setOutlineColor(sf::Color(253, 197, 192, 255));
 				texture->draw(circle);
-
 			}
 		}
 	}
-
-
 }
-
-
-
 
 float NeuralNetwork::activationFunction(float x, std::string forceType)
 {
-	if (forceType == "") {
+	if (forceType == "")
+	{
 		forceType = currentActivationFunction;
 	}
 
@@ -490,7 +481,7 @@ float NeuralNetwork::activationFunction(float x, std::string forceType)
 
 		if (x < 0)
 		{
-			return 0.01*x;
+			return 0.01 * x;
 		}
 		else
 		{
@@ -511,16 +502,16 @@ float NeuralNetwork::activationFunction(float x, std::string forceType)
 	}
 }
 
-
 float NeuralNetwork::activationFunctionPartialDerivative(float x, std::string forceType)
 {
-	if (forceType == "") {
+	if (forceType == "")
+	{
 		forceType = currentActivationFunction;
 	}
 
 	if (forceType == "s")
 	{
-		return x*(1-x);
+		return x * (1 - x);
 	}
 	else if (forceType == "r")
 	{
@@ -558,7 +549,6 @@ float NeuralNetwork::activationFunctionPartialDerivative(float x, std::string fo
 	}
 }
 
-
 void NeuralNetwork::saveNetwork()
 {
 	std::ofstream outfile;
@@ -570,7 +560,6 @@ void NeuralNetwork::saveNetwork()
 	{
 		outfile << Layers[_Layers].NumberOfNeurons << ",";
 	}
-
 
 	for (int _Layers = 1; _Layers < NumberOfLayers; _Layers++)
 	{
@@ -592,8 +581,6 @@ void NeuralNetwork::saveNetwork()
 		{
 
 			outfile << Layers[_Layers].Neurons[_Neurons].bias << ",";
-			
-			
 		}
 		outfile << ":";
 	}
@@ -605,27 +592,26 @@ void NeuralNetwork::loadNetwork()
 {
 	std::fstream txtFile;
 	txtFile.open("../assets/Networks/networkSave.txt", std::ios::in);
+	// txtFile.open("networkSave.txt", std::ios::in);
 	std::string strings;
 	std::vector<std::string> stringVector;
-	if (txtFile.is_open()) {
+	if (txtFile.is_open())
+	{
 
-		while (getline(txtFile, strings)) {  
+		while (getline(txtFile, strings))
+		{
 			stringVector.push_back(strings);
 		}
-		
 	}
 	else
 	{
 		std::cout << "Could not found file!";
 	}
-	
 
 	txtFile.close();
 
 	std::string Weights = stringVector[0];
 	std::string Bias = stringVector[1];
-
-
 
 	size_t a = Weights.find(",");
 	std::string numLayers = Weights.substr(0, a);
@@ -634,13 +620,10 @@ void NeuralNetwork::loadNetwork()
 
 	NumberOfLayers = std::stoi(numLayers);
 
-
-
 	int previosLayerSize = 1;
 
 	std::vector<Layer> clearLayers;
 	Layers = clearLayers;
-
 
 	for (int i = 0; i < std::stoi(numLayers); i++)
 	{
@@ -649,7 +632,6 @@ void NeuralNetwork::loadNetwork()
 
 		Weights = Weights.substr(a + 1, Weights.size());
 
-		
 		Layer currentLayer = Layer(std::stoi(s), previosLayerSize, 1);
 		Layers.push_back(currentLayer);
 		previosLayerSize = std::stoi(s);
@@ -657,13 +639,13 @@ void NeuralNetwork::loadNetwork()
 
 	for (int _Layers = 1; _Layers < NumberOfLayers; _Layers++)
 	{
-		
+
 		size_t a = Weights.find(":");
 		std::string currentLayerString = Weights.substr(0, a);
 		Weights = Weights.substr(a + 1, Weights.size());
 		for (int _Neurons = 0; _Neurons < Layers[_Layers].NumberOfNeurons; _Neurons++)
 		{
-			
+
 			size_t a = currentLayerString.find(";");
 			std::string currentNeuronString = currentLayerString.substr(0, a);
 			currentLayerString = currentLayerString.substr(a + 1, currentLayerString.size());
@@ -677,8 +659,6 @@ void NeuralNetwork::loadNetwork()
 		}
 		totalError = 0;
 	}
-	
-
 
 	for (int _Layers = 1; _Layers < NumberOfLayers; _Layers++)
 	{
@@ -699,7 +679,8 @@ void NeuralNetwork::loadNetwork()
 	renderWeights = true;
 }
 
-std::vector<float> NeuralNetwork::calculateNeuronValuesHiddenLayer(int Layer, std::vector<float> NeuronValuesNextLayer) {
+std::vector<float> NeuralNetwork::calculateNeuronValuesHiddenLayer(int Layer, std::vector<float> NeuronValuesNextLayer)
+{
 
 	std::vector<float> newNeuronValues;
 
@@ -713,19 +694,21 @@ std::vector<float> NeuralNetwork::calculateNeuronValuesHiddenLayer(int Layer, st
 		newNeuronValue *= activationFunctionPartialDerivative(Layers[Layer].Neurons[i].value);
 
 		newNeuronValues.push_back(newNeuronValue);
-		if (std::isnan(newNeuronValue)) {
-			std::cout << "NAN: " << i << ", " << "HiddenLayer" << ", " << 0 << ", " << 0 << "\n";
+		if (std::isnan(newNeuronValue))
+		{
+			std::cout << "NAN: " << i << ", "
+					  << "HiddenLayer"
+					  << ", " << 0 << ", " << 0 << "\n";
 		}
 	}
-
 
 	return newNeuronValues;
 }
 
-std::vector<float> NeuralNetwork::calculateNeuronValuesOutputLayer(std::vector<float> Outputs, std::vector<float> Solutions) {
+std::vector<float> NeuralNetwork::calculateNeuronValuesOutputLayer(std::vector<float> Outputs, std::vector<float> Solutions)
+{
 
 	std::vector<float> NeuronValues;
-
 
 	for (int currentNeuron = 0; currentNeuron < Layers[NumberOfLayers - 1].NumberOfNeurons; currentNeuron++)
 	{
@@ -739,16 +722,15 @@ std::vector<float> NeuralNetwork::calculateNeuronValuesOutputLayer(std::vector<f
 		else if (currentErrorFunction == "ce")
 		{
 			NeuronValues.push_back(Outputs[currentNeuron] - Solutions[currentNeuron]);
-			if (std::isnan(Solutions[currentNeuron] - Outputs[currentNeuron])) {
+			if (std::isnan(Solutions[currentNeuron] - Outputs[currentNeuron]))
+			{
 				std::cout << "Nan3: " << Solutions[currentNeuron] << ", " << Outputs[currentNeuron] << "\n";
 			}
-
 		}
 
-
-		//std::cout << "a  " << Outputs[currentNeuron] << ", " << Layers[NumberOfLayers - 1].Neurons[currentNeuron].value << "\n";
+		// std::cout << "a  " << Outputs[currentNeuron] << ", " << Layers[NumberOfLayers - 1].Neurons[currentNeuron].value << "\n";
 	}
-	
+
 	return NeuronValues;
 }
 
@@ -766,27 +748,25 @@ std::vector<float> NeuralNetwork::calculateNeuronValuesInputLayer(std::vector<fl
 		newNeuronValues.push_back(newNeuronValue);
 	}
 
-
 	return newNeuronValues;
 }
 
-
-std::pair<std::vector<std::vector<float>>, std::vector<float>> NeuralNetwork::calculateGradientsWeightsAndBias(int Layer, std::vector<float> NeuronValues) {
+std::pair<std::vector<std::vector<float>>, std::vector<float>> NeuralNetwork::calculateGradientsWeightsAndBias(int Layer, std::vector<float> NeuronValues)
+{
 
 	std::vector<std::vector<float>> weightGradients;
 
 	std::vector<float> biasGradients;
 
 	std::pair<std::vector<std::vector<float>>, std::vector<float>> gradients;
-	//std::cout << "----------------------------------------" << "\n";
+	// std::cout << "----------------------------------------" << "\n";
 	for (int i = 0; i < Layers[Layer].NumberOfNeurons; i++)
 	{
-		//std::cout << NeuronValues[i] << "\n";
+		// std::cout << NeuronValues[i] << "\n";
 		std::vector<float> weightGradientsOneNeuron;
 		for (int j = 0; j < Layers[Layer - 1].NumberOfNeurons; j++)
 		{
 			weightGradientsOneNeuron.push_back(Layers[Layer - 1].Neurons[j].value * NeuronValues[i]);
-
 		}
 		weightGradients.push_back(weightGradientsOneNeuron);
 		biasGradients.push_back(NeuronValues[i]);
@@ -796,22 +776,22 @@ std::pair<std::vector<std::vector<float>>, std::vector<float>> NeuralNetwork::ca
 	return gradients;
 }
 
-
-std::vector<std::pair<std::vector<std::vector<float>>, std::vector<float>>> NeuralNetwork::Backpropagation(std::pair<std::vector<float>, int>& data) {
+std::vector<std::pair<std::vector<std::vector<float>>, std::vector<float>>> NeuralNetwork::Backpropagation(std::pair<std::vector<float>, int> &data)
+{
 
 	std::vector<float> Outputs = calculateOutputs(data.first, 0.3f);
 	std::vector<float> Solutions;
 	for (int i = 0; i < Outputs.size(); i++)
 	{
-		if (data.second == i) {
+		if (data.second == i)
+		{
 			Solutions.push_back(1);
-
 		}
-		else {
+		else
+		{
 			Solutions.push_back(0);
-		}   
+		}
 	}
-
 
 	std::vector<std::pair<std::vector<std::vector<float>>, std::vector<float>>> Gradient;
 
@@ -829,14 +809,12 @@ std::vector<std::pair<std::vector<std::vector<float>>, std::vector<float>>> Neur
 	return Gradient;
 }
 
-std::vector<std::pair<std::vector<std::vector<float>>, std::vector<float>>> NeuralNetwork::BackpropagationMultipleSolutions(std::pair<std::vector<float>, std::vector<float>>& data)
+std::vector<std::pair<std::vector<std::vector<float>>, std::vector<float>>> NeuralNetwork::BackpropagationMultipleSolutions(std::pair<std::vector<float>, std::vector<float>> &data)
 {
 
 	std::vector<float> Outputs = calculateOutputs(data.first, 0.3f);
 	std::vector<float> Solutions = data.second;
 
-
-
 	std::vector<std::pair<std::vector<std::vector<float>>, std::vector<float>>> Gradient;
 
 	std::vector<float> neuronValues = calculateNeuronValuesOutputLayer(Outputs, Solutions);
@@ -853,15 +831,10 @@ std::vector<std::pair<std::vector<std::vector<float>>, std::vector<float>>> Neur
 	return Gradient;
 }
 
-
-
-
 std::vector<std::pair<std::vector<std::vector<float>>, std::vector<float>>> NeuralNetwork::averageWeightsGradient(std::vector<std::vector<std::pair<std::vector<std::vector<float>>, std::vector<float>>>> &gradients)
 {
 	std::vector<std::pair<std::vector<std::vector<float>>, std::vector<float>>> AverageGradient;
-	
 
-	
 	for (int _Layer = 0; _Layer < gradients[0].size(); _Layer++)
 	{
 		std::pair<std::vector<std::vector<float>>, std::vector<float>> AverageGradientPair;
@@ -871,7 +844,6 @@ std::vector<std::pair<std::vector<std::vector<float>>, std::vector<float>>> Neur
 		{
 
 			std::vector<float> AverageGradientWeight2;
-			
 
 			for (int _Weight = 0; _Weight < gradients[0][_Layer].first[_Neuron].size(); _Weight++)
 			{
@@ -880,9 +852,8 @@ std::vector<std::pair<std::vector<std::vector<float>>, std::vector<float>>> Neur
 				{
 					AverageGradientWeightSum += gradients[i][_Layer].first[_Neuron][_Weight];
 				}
-				//std::cout << AverageGradientWeightSum / gradients.size() << "\n";
+				// std::cout << AverageGradientWeightSum / gradients.size() << "\n";
 				AverageGradientWeight2.push_back(AverageGradientWeightSum / gradients.size());
-				
 			}
 
 			float AverageGradientBiasSum = 0;
@@ -900,23 +871,19 @@ std::vector<std::pair<std::vector<std::vector<float>>, std::vector<float>>> Neur
 
 		AverageGradient.push_back(AverageGradientPair);
 	}
-	
-
 
 	return AverageGradient;
 }
 
-void NeuralNetwork::applyWeightsAndBiasGradient(std::vector<std::pair<std::vector<std::vector<float>>, std::vector<float>>>& gradient)
+void NeuralNetwork::applyWeightsAndBiasGradient(std::vector<std::pair<std::vector<std::vector<float>>, std::vector<float>>> &gradient)
 {
-
-
 
 	for (int currentLayer = 1; currentLayer < NumberOfLayers; currentLayer++)
 	{
 		int currentLayerBack = NumberOfLayers - currentLayer;
 		for (int currentNeuron = 0; currentNeuron < Layers[currentLayerBack].NumberOfNeurons; currentNeuron++)
 		{
-			
+
 			for (int currentWeight = 0; currentWeight < Layers[currentLayerBack].Neurons[currentNeuron].NumberOfNeuronsreviousLayer; currentWeight++)
 			{
 				float temp = 0;
@@ -924,9 +891,9 @@ void NeuralNetwork::applyWeightsAndBiasGradient(std::vector<std::pair<std::vecto
 				if (currentRegularizationTerm == "n")
 				{
 					temp = Layers[currentLayerBack].Neurons[currentNeuron].weights[currentWeight] - LearningRate * gradient[currentLayer - 1].first[currentNeuron][currentWeight];
-					//std::cout << gradient[currentLayer - 1].first[currentNeuron][currentWeight] << "\n";
+					// std::cout << gradient[currentLayer - 1].first[currentNeuron][currentWeight] << "\n";
 				}
-				else if (currentRegularizationTerm == "l2") 
+				else if (currentRegularizationTerm == "l2")
 				{
 					float regularizationTerm = ((2 * lambda / batchSize) * Layers[currentLayerBack].Neurons[currentNeuron].weights[currentWeight]);
 					temp = Layers[currentLayerBack].Neurons[currentNeuron].weights[currentWeight] - LearningRate * (gradient[currentLayer - 1].first[currentNeuron][currentWeight] + regularizationTerm);
@@ -934,23 +901,19 @@ void NeuralNetwork::applyWeightsAndBiasGradient(std::vector<std::pair<std::vecto
 				else if (currentRegularizationTerm == "lim")
 				{
 					temp = Layers[currentLayerBack].Neurons[currentNeuron].weights[currentWeight] - LearningRate * (gradient[currentLayer - 1].first[currentNeuron][currentWeight]);
-					if (temp > 10) 
+					if (temp > 10)
 						temp = 10;
-					
 				}
-				
+
 				Layers[currentLayerBack].Neurons[currentNeuron].weights[currentWeight] = temp;
 			}
 
 			Layers[currentLayerBack].Neurons[currentNeuron].bias -= LearningRate * gradient[currentLayer - 1].second[currentNeuron];
 		}
-
 	}
 }
 
-
-
-double NeuralNetwork::calculateAverageError(std::vector<std::pair<std::vector<float>, int>>& data)
+double NeuralNetwork::calculateAverageError(std::vector<std::pair<std::vector<float>, int>> &data)
 {
 	double averageCost = 0;
 	for (int i = 0; i < data.size(); i++)
@@ -960,16 +923,16 @@ double NeuralNetwork::calculateAverageError(std::vector<std::pair<std::vector<fl
 	return averageCost / data.size();
 }
 
-float NeuralNetwork::calculateAccuracy(std::vector<std::pair<std::vector<float>, int>>& data)
+float NeuralNetwork::calculateAccuracy(std::vector<std::pair<std::vector<float>, int>> &data)
 {
 
 	int correct = 0;
 	for (int i = 0; i < data.size(); i++)
 	{
-		if(calculateSolution(data[i].first) == data[i].second)
+		if (calculateSolution(data[i].first) == data[i].second)
 			correct++;
 	}
-	return  (float) correct / data.size();
+	return (float)correct / data.size();
 }
 
 void NeuralNetwork::addLearningRate(float addition)
@@ -977,23 +940,21 @@ void NeuralNetwork::addLearningRate(float addition)
 	LearningRate += addition;
 }
 
-
-
-double NeuralNetwork::calculateError(std::pair<std::vector<float>, int>& data)
+double NeuralNetwork::calculateError(std::pair<std::vector<float>, int> &data)
 {
 	double cost = 0;
 	std::vector<float> Outputs = calculateOutputs(data.first);
 	std::vector<int> Solutions;
 	for (int i = 0; i < Outputs.size(); i++)
 	{
-		if (data.second == i){
+		if (data.second == i)
+		{
 			Solutions.push_back(1);
-			
 		}
 		else
 			Solutions.push_back(0);
 	}
-	
+
 	for (int i = 0; i < Outputs.size(); i++)
 	{
 		if (currentErrorFunction == "mse")
@@ -1005,14 +966,14 @@ double NeuralNetwork::calculateError(std::pair<std::vector<float>, int>& data)
 		else if (currentErrorFunction == "ce")
 		{
 			float temp = Solutions[i] * log10(Outputs[i]);
-			if (std::isnan(temp) && Solutions[i] == 0) {
+			if (std::isnan(temp) && Solutions[i] == 0)
+			{
 				temp = 0;
 			}
 			cost += temp;
 		}
-		
 	}
-	//std::cout << cost << "\n";
+	// std::cout << cost << "\n";
 	if (currentErrorFunction == "mse")
 	{
 		return cost * 0.5f;
@@ -1023,8 +984,7 @@ double NeuralNetwork::calculateError(std::pair<std::vector<float>, int>& data)
 	}
 }
 
-
-double NeuralNetwork::calculateAverageErrorMultipleSolutions(std::vector<std::pair<std::vector<float>, std::vector<float>>>& data)
+double NeuralNetwork::calculateAverageErrorMultipleSolutions(std::vector<std::pair<std::vector<float>, std::vector<float>>> &data)
 {
 	double averageCost = 0;
 	for (int i = 0; i < data.size(); i++)
@@ -1034,12 +994,11 @@ double NeuralNetwork::calculateAverageErrorMultipleSolutions(std::vector<std::pa
 	return averageCost / data.size();
 }
 
-double NeuralNetwork::calculateErrorMultipleSolutions(std::pair<std::vector<float>, std::vector<float>>& data)
+double NeuralNetwork::calculateErrorMultipleSolutions(std::pair<std::vector<float>, std::vector<float>> &data)
 {
 	double cost = 0;
 	std::vector<float> Outputs = calculateOutputs(data.first);
 	std::vector<float> Solutions = data.second;
-
 
 	for (int i = 0; i < Outputs.size(); i++)
 	{
@@ -1047,6 +1006,6 @@ double NeuralNetwork::calculateErrorMultipleSolutions(std::pair<std::vector<floa
 
 		cost += outputCost * outputCost;
 	}
-	//std::cout << cost << "\n";
+	// std::cout << cost << "\n";
 	return cost * 0.5f;
 }
