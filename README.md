@@ -1,6 +1,6 @@
 # Neural Network
 
-A simple Neural Network using SFML
+A simple Neural Network build from scratch. The SFML library is used to visualize the Network.
 
 ## Features
 
@@ -29,6 +29,27 @@ A simple Neural Network using SFML
   - Outputs as Numbers and Image
   - DrawingField used as Input
 - Load MNIST CSV Data
+
+## Example
+
+### Training
+The left Network is not trained. The right Network is trained to recognize digits.
+
+<img src="assets/images/Training.png" alt="Training Image" />
+
+
+### Autoencoder
+A trained Autoencoder's goal is to reconstruct its input. This Network was trained to reconstruct a face from the CelebFaces Attributes (CelebA) Dataset. The Network consists of the Encoder, which compresses the input to a lower size and the Decoder, that will reconstruct the input.  
+
+At the left side are the input images and at the right side are the reconstruct images.
+
+
+<img src="assets/images/AutoEncoder1.png" alt="Autoencoder Image 1" />
+
+<img src="assets/images/AutoEncoder2.png" alt="Autoencoder Image 2" />
+
+<img src="assets/images/AutoEncoder3.png" alt="Autoencoder Image 3" />
+
 
 ## Build
 
